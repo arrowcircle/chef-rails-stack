@@ -9,6 +9,10 @@ include_recipe "rbenv"
 include_recipe "memcached"
 include_recipe "nginx"
 
+%w{imagemagick libmagickcore-dev libmagickwand-dev advancecomp gifsicle jpegoptim libjpeg-progs optipng pngcrush}.each do |pkg|
+  package pkg
+end
+
 nginx_site '000-default' do
   enable false
 end
