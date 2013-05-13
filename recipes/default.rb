@@ -17,7 +17,7 @@ nginx_site '000-default' do
   enable false
 end
 
-case node['appserver']
+case node['app_server']
 when "unicorn" then include_recipe "unicorn"
 when "puma" then include_recipe "puma"
 end
@@ -27,7 +27,7 @@ package "monit" do
   action :install
 end
 
-case node['appserver']
+case node['app_server']
 when "unicorn" then include_recipe "unicorn::monit"
 when "puma" then include_recipe "puma::puma"
 end
@@ -55,5 +55,5 @@ template "/etc/sysctl.conf" do
   owner "root"
   group "root"
   mode 0644
-  notifies :restart, resources(:service => 'procps'), :immediately
+  notifies :restart, "service[procps]"
 end
