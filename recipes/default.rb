@@ -17,16 +17,20 @@ nginx_site '000-default' do
   enable false
 end
 
-include_recipe "unicorn"
-# include_recipe "puma"
+case node['appserver']
+when "unicorn" then include_recipe "unicorn"
+when "puma" then include_recipe "puma"
+end
 include_recipe "database"
 
 package "monit" do
   action :install
 end
 
-include_recipe "unicorn::monit"
-# include_recipe "unicorn::puma"
+case node['appserver']
+when "unicorn" then include_recipe "unicorn::monit"
+when "puma" then include_recipe "puma::puma"
+end
 
 service "monit" do
   action [:enable, :start]

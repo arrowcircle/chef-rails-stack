@@ -2,6 +2,8 @@ default["users"]["user"] = "webmaster"
 default["users"]["authorized_keys"] = []
 default["users"]["known_hosts"] = []
 
+default["app_server"] = "unicorn"
+
 default['authorization']['sudo']['users'] = [node['users']['user']]
 default['authorization']['sudo']['passwordless'] = true
 
