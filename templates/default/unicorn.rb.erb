@@ -1,0 +1,41 @@
+app_folder = "<%= @working_path %>"
+worker_processes <%= @workers %>
+working_directory "#{app_folder}/current"
+
+preload_app true
+
+timeout <%= @timeout %>
+
+listen "#{app_folder}/shared/<%= @name %>.sock", :backlog => 1024
+
+pid "#{app_folder}/shared/pids/<%= @name %>.pid"
+
+stderr_path app_folder + "/shared/log/unicorn.log"
+stdout_path app_folder + "/shared/log/unicorn.log"
+
+if GC.respond_to?(:copy_on_write_friendly=)
+  GC.copy_on_write_friendly = true
+end
+
+before_fork do |server, worker|
+  defined?(ActiveRecord::Base) && ActiveRecord::Base.connection.disconnect!
+
+  old_pid = "#{app_folder}/shared/pids/<%= @name %>.pid.oldbin"
+  if File.exists?(old_pid) && server.pid != old_pid
+    begin
+      Process.kill("QUIT", File.read(old_pid).to_i)
+    rescue Errno::ENOENT, Errno::ESRCH
+      puts "Old master alerady dead"
+    end
+  end
+end
+
+after_fork do |server, worker|
+  defined?(ActiveRecord::Base) && ActiveRecord::Base.establish_connection
+  child_pid = server.config[:pid].sub('.pid', ".#{worker.nr}.pid")
+  system("echo #{Process.pid} > #{child_pid}")
+end
+
+before_exec do |server|
+  ENV['BUNDLE_GEMFILE'] = "#{app_folder}/current/Gemfile"
+end
