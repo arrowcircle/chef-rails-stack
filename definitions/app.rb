@@ -91,4 +91,9 @@ define :app do
     rotate 30
     create "644 #{app_user} adm"
   end
+
+  app_database app_name do
+    info current_app
+    config_path config_path
+  end
 end
