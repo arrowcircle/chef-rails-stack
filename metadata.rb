@@ -14,3 +14,6 @@ depends "nginx"
 # depends "unicorn"
 # depends "puma"
 # depends "database"
+
+recipe "rails-stack", "Recipe for provisioning rails server with multiple apps"
+recipe "rails-stack::general", "General server installation"

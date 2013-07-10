@@ -22,3 +22,10 @@ default["sysctl"]["parameters"]["net.ipv4.ip_local_port_range"] = "5000 65535"
 default["sysctl"]["parameters"]["vm.swappiness"] = "30"
 default["sysctl"]["parameters"]["net.core.netdev_max_backlog"] = "10000"
 default["sysctl"]["parameters"]["net.ipv4.tcp_max_syn_backlog"] = "10000"
+
+default['puma']['threads']['min'] = 0
+default['puma']['threads']['max'] = 16
+default['puma']['workers'] = 0
+
+default['unicorn']['timeout'] = 60 
+default['unicorn']['workers'] = 2

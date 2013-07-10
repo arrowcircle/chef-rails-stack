@@ -1,81 +1,94 @@
 define :app do
-  #create and enable nginx site
-
-  template "#{node['nginx']['dir']}/sites-available/#{params[:name]}" do
-    source "rails-site.erb"
-    owner "root"
-    group "root"
-    mode 00644
-    variables({
-      :app_name => params[:name],
-      :socket_path => "/home/#{params[:user]}/projects/#{params[:name]}/shared/#{params[:name]}.sock",
-      :domain_name => params[:domain_name],
-      :public_path => "/home/#{params[:user]}/projects/#{params[:name]}/current/public",
-      })
-  end
-
-  nginx_site params[:name] do
-    enable params[:name]
-  end
-
-  # add init script
-  template "/etc/init.d/#{params[:name]}" do
-    user "root"
-    owner "root"
-    source "rails-init.erb"
-    mode 00755
-    variables({
-      :current_path => "/home/#{params[:user]}/projects/#{params[:name]}/current",
-      :pid_path => "/home/#{params[:user]}/projects/#{params[:name]}/shared/pids/#{params[:name]}.pid",
-      :cmd => "cd /home/#{params[:user]}/projects/#{params[:name]}/; bundle exec unicorn_rails -D -c /home/#{params[:user]}/projects/#{params[:name]}/shared/config/unicorn.rb -E production",
-      :user => params[:user]
-      })
-  end
-
-  # create unicorn.rb
-
-  template "/home/#{params[:user]}/projects/#{params[:name]}/shared/config/unicorn.rb" do
-    user params[:user]
-    owner params[:user]
-    source "unicorn.rb.erb"
-    variables({
-      :workers => 2,
-      :timeout => 60,
-      :working_path => "/home/#{params[:user]}/projects/#{params[:name]}",
-      :name => params[:name]
-    })
-  end
-
-  # create nginx site
-
-  template "#{node['nginx']['dir']}/sites-available/#{params[:name]}" do
-    source "rails-site.erb"
-    owner "root"
-    group "root"
-    mode 00644
-    variables({
-      :app_name => params[:name],
-      :socket_path => "/home/#{params[:user]}/projects/#{params[:name]}/shared/#{params[:name]}.sock",
-      :domain_name => params[:domain_name]
-    })
-  end
-
-  #create monit
-  template "/etc/monit/conf.d/#{params[:name]}" do
-    user "root"
-    owner "root"
-    source "unicorn.monitrc.erb"
-    variables({
-      :app_name => params[:name],
-      :pid_path => "/home/#{params[:user]}/projects/#{params[:name]}/shared/#{params[:name]}.pid",
-    })
-  end
 
   app_user = params[:user]
   app_name = params[:name]
+
+  project_path = "/home/#{app_user}/projects/#{app_name}"
+  shared_path = "#{project_path}/shared"
+  current_path = "#{project_path}/current"
+  public_path = "#{current_path}/public"
+  socket_path = "#{shared_path}/#{app_name}.sock"
+  pid_path = "#{shared_path}/pids/#{app_name}.pid"
+  config_path = "#{shared_path}/config"
+  domain_name = params[:domain_name]
+
+  #create and enable nginx site
+  template "#{node['nginx']['dir']}/sites-available/#{app_name}" do
+    source "rails-site.erb"
+    owner "root"
+    group "root"
+    mode 00644
+    variables({
+      :app_name => app_name,
+      :socket_path => socket_path,
+      :domain_name => params[:domain_name],
+      :public_path => public_path,
+      })
+  end
+
+  current_app = node['apps'].select {|a| a[:name] == app_name }.first
+
+  case current_app['app_server']['type']
+  when "unicorn"
+    unicorn_config app_name do
+      path project_path
+      domain_name domain_name
+      user app_user
+      workers current_app['app_server']['workers'] || node['unicorn']['workers']
+      app_timeout current_app['app_server']['timeout'] || node['unicorn']['timeout']
+    end
+  when "puma"
+    puma_config app_name do
+      path project_path
+      domain_name domain_name
+      user app_user
+      workers current_app['app_server']['workers'] || node['puma']['workers']
+      min_threads current_app['app_server']['min_threads'] || node['puma']['threads']['min']
+      max_threads current_app['app_server']['max_threads'] || node['puma']['threads']['max']
+    end
+  end
+
+  # create nginx site
+  template "#{node['nginx']['dir']}/sites-available/#{app_name}" do
+    source "rails-site.erb"
+    owner "root"
+    group "root"
+    mode 00644
+    variables({
+      :app_name => app_name,
+      :socket_path => socket_path,
+      :domain_name => domain_name
+    })
+  end
+
+  nginx_site app_name do
+    enable app_name
+  end
+
+  #create monit
+  template "/etc/monit/conf.d/#{app_name}" do
+    user "root"
+    owner "root"
+    source "app.monitrc.erb"
+    variables({
+      :app_name => app_name,
+      :pid_path => pid_path,
+    })
+  end
+
   # ruby part
   rbenv_ruby params[:ruby_version] do
     user app_user
     app_name app_name
+  end
+
+  # logrotate
+  logrotate_app app_name do
+    cookbook "logrotate"
+    path "#{shared_path}/logs"
+    options ["missingok"]
+    frequency "daily"
+    rotate 30
+    create "644 #{app_user} adm"
   end
 end
