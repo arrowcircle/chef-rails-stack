@@ -10,7 +10,7 @@ server {
 server {
   listen 80 default deferred;
   server_name <%= @domain_name %>;
-  root <%= @pubic_path %>;
+  root <%= @public_path %>;
 
   location ^~ /assets/ {
     gzip_static on;

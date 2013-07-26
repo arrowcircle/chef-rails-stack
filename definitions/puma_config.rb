@@ -13,6 +13,8 @@ define :puma_config do
   min_threads = params[:min_threads] || 0
   max_threads = params[:max_threads] || 16
   domain_name = params[:domain_name]
+  puma_ctl = "pumactl -P #{pid_path} -S #{state_path}"
+  prefix = "cd #{current_path}; RAILS_ENV=production bundle exec "
   
   template "#{config_path}/#{app_name}.rb" do
     user app_user
@@ -34,12 +36,16 @@ define :puma_config do
   template "/etc/init.d/#{app_name}" do
     user "root"
     owner "root"
-    source "rails-init.erb"
+    source "puma-init.erb"
     mode 00755
     variables({
       :current_path => current_path,
       :pid_path => pid_path,
-      :cmd => "cd #{current_path}; RAILS_ENV=production bundle exec puma -C #{config_path}/#{app_name}.rb",
+      :state_path => state_path,
+      :config_path => "#{config_path}/#{app_name}.rb",
+      :start => "#{prefix}puma -C #{config_path}/#{app_name}.rb",
+      :stop => "#{prefix}#{puma_ctl} stop",
+      :restart => "#{prefix}#{puma_ctl} restart",
       :user => app_user
       })
   end

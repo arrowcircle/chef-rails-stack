@@ -31,7 +31,7 @@ define :unicorn_config do
   template "/etc/init.d/#{app_name}" do
     user "root"
     owner "root"
-    source "rails-init.erb"
+    source "unicorn-init.erb"
     mode 00755
     variables({
       :current_path => current_path,
