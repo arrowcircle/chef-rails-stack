@@ -42,7 +42,9 @@ force-stop)
   run "<%= @stop %>"
   ;;
 restart|reload)
-  run "<%= @restart %>"
+  sig 0 && run "<%= @restart %>" && echo reloaded OK && exit 0
+  echo >&2 "Couldn't reload, starting instead"
+  run "<%= @start %>"
   ;;
 upgrade)
   run "<%= @restart %>"

@@ -11,6 +11,7 @@ define :app do
   pid_path = "#{shared_path}/pids/#{app_name}.pid"
   config_path = "#{shared_path}/config"
   domain_name = params[:domain_name]
+  log "=========== #{public_path} #{project_path} #{shared_path} #{current_path}"
 
   #create and enable nginx site
   template "#{node['nginx']['dir']}/sites-available/#{app_name}" do
@@ -21,7 +22,7 @@ define :app do
     variables({
       :app_name => app_name,
       :socket_path => socket_path,
-      :domain_name => params[:domain_name],
+      :domain_name => domain_name,
       :public_path => public_path,
       })
   end
