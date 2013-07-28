@@ -47,10 +47,14 @@ restart|reload)
   run "<%= @start %>"
   ;;
 upgrade)
-  run "<%= @restart %>"
+  sig 0 && run "<%= @restart %>" && echo reloaded OK && exit 0
+  echo >&2 "Couldn't reload, starting instead"
+  run "<%= @start %>"
   ;;
 reopen-logs)
-  run "<%= @restart %>"
+  sig USR2 && echo reloaded OK && exit 0
+  echo >&2 "Couldn't reload, starting instead"
+  run "<%= @start %>"
   ;;
 *)
   echo >&2 "Usage: $0 <start|stop|restart|upgrade|force-stop|reopen-logs>"
