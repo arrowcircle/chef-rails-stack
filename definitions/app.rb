@@ -13,20 +13,6 @@ define :app do
   domain_name = params[:domain_name]
   log "=========== #{public_path} #{project_path} #{shared_path} #{current_path}"
 
-  #create and enable nginx site
-  template "#{node['nginx']['dir']}/sites-available/#{app_name}" do
-    source "rails-site.erb"
-    owner "root"
-    group "root"
-    mode 00644
-    variables({
-      :app_name => app_name,
-      :socket_path => socket_path,
-      :domain_name => domain_name,
-      :public_path => public_path,
-      })
-  end
-
   current_app = node['apps'].select {|a| a[:name] == app_name }.first
 
   case current_app['app_server']['type']
@@ -49,7 +35,7 @@ define :app do
     end
   end
 
-  # create nginx site
+  #create and enable nginx site
   template "#{node['nginx']['dir']}/sites-available/#{app_name}" do
     source "rails-site.erb"
     owner "root"
@@ -58,8 +44,9 @@ define :app do
     variables({
       :app_name => app_name,
       :socket_path => socket_path,
-      :domain_name => domain_name
-    })
+      :domain_name => domain_name,
+      :public_path => public_path,
+      })
   end
 
   nginx_site app_name do
