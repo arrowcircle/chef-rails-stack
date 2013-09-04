@@ -12,7 +12,7 @@ define :app_database do
     owner app_user
     source "database.yml.erb"
     variables({
-      :db_type => info['database']['type'],
+      :db_type => db_type,
       :db_name => info['database']['dbname'],
       :db_user => info['database']['username'],
       :db_password => info['database']['password'],
