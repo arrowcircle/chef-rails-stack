@@ -2,14 +2,16 @@ upstream <%= @app_name %> {
   server unix:<%= @socket_path %> fail_timeout=0;
 }
 
+<% @domain_names.each do |domain_name| %>
 server {
-  server_name  www.<%= @domain_name %>;
-  return 301 $scheme://<%= @domain_name %>$request_uri;
+  server_name  www.<%= domain_name %>;
+  return 301 $scheme://<%= domain_name %>$request_uri;
 }
+<% end %>
 
 server {
-  listen 80 default deferred;
-  server_name <%= @domain_name %>;
+  listen 80;
+  server_name <%= @domain_names.join(' ') %>;
   root <%= @public_path %>;
 
   location ^~ /assets/ {

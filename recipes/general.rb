@@ -10,8 +10,8 @@ include_recipe "memcached"
 
 include_recipe "nginx"
 
-nginx_site '000-default' do
-  enable false
+service "nginx" do
+  supports :reload => true
 end
 
 include_recipe "rbenv"

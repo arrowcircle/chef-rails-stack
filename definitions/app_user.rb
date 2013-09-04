@@ -16,13 +16,6 @@ define :app_user do
     members params[:name]
   end
 
-  group sudo_group do
-    action :modify
-    members "vagrant"
-    append true
-    only_if ("ls /home | grep vagrant")
-  end
-
   execute "generate ssh key for user" do
     user params[:name]
     command "ssh-keygen -t rsa -q -f /home/#{params[:name]}/.ssh/id_rsa -P \"\""
@@ -45,32 +38,6 @@ define :app_user do
     mode 0600
     variables({:keys => params[:known_hosts]})
     only_if { params[:known_hosts] }
-  end
-
-  pre = "/home/#{params[:name]}/projects"
-  working_path = "#{pre}/#{params[:app_name]}"
-  shared_path = "#{pre}/#{params[:app_name]}/shared"
-
-  dirs = [
-      "#{pre}",
-      "#{working_path}",
-      "#{working_path}/releases",
-      "#{shared_path}",
-      "#{shared_path}/uploads",
-      "#{shared_path}/config",
-      "#{shared_path}/log",
-      "#{shared_path}/tmp",
-      "#{shared_path}/pids"
-    ]
-
-  dirs.each do |dir|
-    directory dir do
-      owner params[:name]
-      user params[:name]
-      group params[:name]
-      mode 00775
-      action :create
-    end
   end
 
   # ruby part

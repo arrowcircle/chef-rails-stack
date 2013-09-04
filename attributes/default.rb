@@ -1,14 +1,12 @@
 require 'securerandom'
 
-default["users"]["user"] = "webmaster"
-default["users"]["authorized_keys"] = []
-default["users"]["known_hosts"] = []
+default["users"] = []
 
 default["app_server"] = "unicorn"
 
 default["default_ruby_version"] = "2.0.0-p247"
 
-default['authorization']['sudo']['users'] = [node['users']['user']]
+default['authorization']['sudo']['users'] = node['users'].map(&:user)
 default['authorization']['sudo']['passwordless'] = true
 
 default["memcached"]["listen"]  = "127.0.0.1"

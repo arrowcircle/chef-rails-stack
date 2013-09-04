@@ -19,3 +19,7 @@ depends "postgresql"
 
 recipe "rails-stack", "Recipe for provisioning rails server with multiple apps"
 recipe "rails-stack::general", "General server installation"
+recipe "rails-stack::users", "Users manager"
+recipe "rails-stack::apps", "Applications manager"
+recipe "rails-stack::directories", "Ruby applications directory manager"
+recipe "rails-stack::databases", "Databases manager"
