@@ -41,6 +41,7 @@ define :puma_config do
     variables({
       :current_path => current_path,
       :pid_path => pid_path,
+      :socket_path => socket_path,
       :state_path => state_path,
       :config_path => "#{config_path}/#{app_name}.rb",
       :start => "#{prefix}puma -C #{config_path}/#{app_name}.rb",
