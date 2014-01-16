@@ -4,7 +4,7 @@ default["users"] = []
 
 default["app_server"] = "unicorn"
 
-default["default_ruby_version"] = "2.0.0-p247"
+default["default_ruby_version"] = "2.1.0"
 
 default['authorization']['sudo']['users'] = node['users'].map(&:user)
 default['authorization']['sudo']['passwordless'] = true
