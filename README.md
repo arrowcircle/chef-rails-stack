@@ -24,7 +24,7 @@
             {
               "name": "YOUR_APP_NAME",
               "user": "username",
-              "ruby_version": "2.0.0-p247",
+              "ruby_version": "2.1.0",
               "domain_names": ["DOMAIN_NAME", "DOMAIN_NAME1"],
               "app_server": {
                 "type": "unicorn",
